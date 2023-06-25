@@ -41,12 +41,17 @@ const todoSlice = createSlice({
     },
     pushCartContent:(state,action)=>{
        const {item,id}=action.payload
+       console.log(item,"helloe")
+       console.log(id,"kdl")
        state.todo.map(ele=>{
-        if(ele.id===id){
+        if(ele.cartName===id){
+          console.log("i am inside")
             ele.cartItems=item
             localStorage.setItem("todolists",JSON.stringify(state.todo))
+            
         }
        })
+       
     }
 
     }

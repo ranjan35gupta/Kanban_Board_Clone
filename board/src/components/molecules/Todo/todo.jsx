@@ -24,7 +24,7 @@ const Todo = () => {
   const dispatch = useDispatch();
   const values = useSelector(state=>state.newState)
   const {title,todo,beforeCartTitle} = values
-  const [input1,setInput1]=useState([{in:<input/>}])
+  const [todo1,setTodo1]=useState(todo)
   const [showList, setShowList] = useState(false);
   const [addlist,setAddList]=useState('')
   const [titleName1,setTitleName1]=useState('')
@@ -85,30 +85,77 @@ const Todo = () => {
     setShowList(true);
   }
 
-function handleOnDragEnd(result){
-  console.log(result,"htis is result")
-  const items = Array.from(todo)
-  const [reorderedItem]=items.splice(result.source.index,1)
-  items.splice(result.destination.index,0,reorderedItem)
-  dispatch(addTodo(items))
+function handleDragEnd(result){
+  console.log(result)
+  if(!result.destination)return
+  const {destination,source}=result
+   if(source.droppableId=="main_container"){
+    console.log("hl")
+   }
+  if(source.droppableId!==destination.droppableId){
+    const todos = [...todo]
+    let ar=[]
+    for(let i=0;i<todos.length;i++){
+      if(todos[i].cartName==source.droppableId){
+        ar.push(i)
+      }
+    }
+    const [x] = ar
+     let ar1=[]
+    for(let i=0;i<todos.length;i++){
+      if(todos[i].cartName==destination.droppableId){
+        ar1.push(i)
+      }
+    }
+    
+    const [y] = ar1
+    const items = Array.from(todo[x].cartItems)
+    const items1 = Array.from(todo[y].cartItems)
+     const [reorderedItem]= items.splice(source.index,1)
+    dispatch(pushCartContent({item:items,id:source.droppableId}))
+    items1.splice(result.destination.index,0,reorderedItem)
+   dispatch(pushCartContent({item:items1,id:destination.droppableId}))
+   }
+   else{
+    const todos = [...todo]
+    let ar=[]
+    for(let i=0;i<todos.length;i++){
+      if(todos[i].cartName==source.droppableId){
+        ar.push(i)
+      }
+    }
+    const [x] = ar
+     let ar1=[]
+    for(let i=0;i<todos.length;i++){
+      if(todos[i].cartName==destination.droppableId){
+        ar1.push(i)
+      }
+    }
+    
+    const [y] = ar1
+    const items = Array.from(todo[x].cartItems)
+    // const items1 = Array.from(todo[y].cartItems)
+     const [reorderedItem]= items.splice(source.index,1)
+     
+    items.splice(result.destination.index,0,reorderedItem)
+   dispatch(pushCartContent({item:items,id:destination.droppableId}))
+
+   }
+ 
+ 
  
 
 }
-function handleOnDragEnd1(result,id,index){
+function handleOnDragEnd1(result){
+  if(!result.destination) return
+  const {source,destination}=result
+  if(source.droppableId==destination.draggableId){
+    console.log("hdl")
+  }
+  
  
-  
-  console.log(result,"showing result")
-  console.log(todo[index],"mine items")
-  // console.log(items,"updated one")
-  
-    const items = Array.from(todo[index].cartItems)
-    // const items1 = Array.from(todo[index+1].cartItems)
-  
-  const [reorderedItem]= items.splice(result.source.index,1)
-  
-  items.splice(result.destination.index,0,reorderedItem)
  
-    dispatch(pushCartContent({item:items,id:id}))
+    
 }
 
 
@@ -124,7 +171,10 @@ const handleDelete = (index) => {
 }
   
   return (
-    <div className={styles.container}>
+    
+      
+    <div className={styles.container}   >
+     
     <div>
       {isClicked ? (
         <div className={styles.add_list}>
@@ -147,20 +197,27 @@ const handleDelete = (index) => {
         </div>
       )}
       </div>
+      
+      <div >
 
-    
-        <div className={styles.container1} >
-          <DragDropContext onDragEnd={handleOnDragEnd}  >
-            <Droppable droppableId={todo.map(ele=>ele.id)}>
-              {(provided)=>(
-
-             <div className={styles.todo_container_list}  {...provided.droppableProps} ref={provided.innerRef} >
+      <DragDropContext  onDragEnd={(result)=>handleDragEnd(result)}  >
+     
+        <div className={styles.container1}  >
+       
+          
+      
+          <div className={styles.todo_container_list} >
           {todo.map((item,index) => {
             return (
-              <Draggable key={item.id} draggableId={item.id} index={index} >
+              
+               <div  >
+          
+
+               <Droppable  droppableId={item.cartName}>
                 {(provided)=>(
-              <div  {...provided.draggableProps} {...provided.dragHandleProps}  className={styles.wraperContainer}  ref={provided.innerRef}>
-                <div className={styles.todoContainer}>
+              <div className={styles.wraperContainer} {...provided.droppableProps} ref={provided.innerRef}  >
+                
+                <div className={styles.todoContainer} >
                   <div className={styles.titles}>
                   <form className={styles.forms} onSubmit={(e)=>handleTitle(e,item.id)}>
                     <div className={styles.horizontalIcons}>
@@ -177,27 +234,25 @@ const handleDelete = (index) => {
                  </div>
                   </form>
                   </div>
-                  <DragDropContext  onDragEnd={(result)=>handleOnDragEnd1(result,item.id,index)}    >
-                    <Droppable  droppableId={item.cartItems.map(ele=>ele.listItemId)} >
-                      {(provided)=>(
-                  <div {...provided.draggableProps}   ref={provided.innerRef}    className={styles.cartitem}   >
+                  
+                   
+                  <div  className={styles.cartitem}   >
                   {item.cartItems.map((ele,index)=>{
                     return(
-                      <Draggable key={ele.listItemId}  draggableId={ele.listItemId} index={index}  >
-                        {(provided)=>(
-                          <>
-                      <div className={styles.element} {...provided.draggableProps} {...provided.dragHandleProps} ref={provided.innerRef}>{ele.nameOfCardItem}  </div>
+                        <Draggable draggableId={ele.listItemId} key={ele.listItemId} index={index}>
+                          {(provided)=>(
+                          <div  className={styles.divElement} {...provided.draggableProps} {...provided.dragHandleProps} ref={provided.innerRef}>
+                      <div className={styles.element} >{ele.nameOfCardItem}  </div>
                       <BiPencil className={styles.pencil}/>
-                      </>
+                      </div>
                       )}
                       </Draggable>
                     )
                   })}
-                  {provided.placeholder}
+                  
                   </div>
-                  )}
-                  </Droppable>
-                  </DragDropContext>
+                 
+                  
                   <form onSubmit={(e)=>addCartList(e,item.id)} className={styles.form2} >
                   <input className={styles.input2} type="text" onChange={(e)=>setAddList(e.target.value)} />
                   </form>
@@ -205,32 +260,58 @@ const handleDelete = (index) => {
                  <button className={styles.addbtn} onClick={(e)=>addCartList(e,item.id)}>cart</button>
                  <div className={styles.cross1}>
           <RxCross2 />
+
            </div> 
                  
-               
                 </div>
+                
+
+                {provided.placeholder}
               </div>
+              
               )}
-              </Draggable>
+              </Droppable>
+              
+              </div>
+             
+              
             )
             
           })}
-          {provided.placeholder}
+        
           </div> 
-          )
-
-              }
-           
-          </Droppable>
-          </DragDropContext>
-
+         
+         
+          
           
         </div>
-     
+        
+        </DragDropContext>
+        
+        </div>
+       
     </div>
+   
+   
   );
 };
 
 export default Todo;
 // defaultValue={title}
 {/* <List/> */}
+
+
+
+     
+        {/* <DragDropContext >
+          <Droppable droppableId="outer_container">{...provided.droppableProps} ref={provided.innerRef} 
+            {(provided)=>( */}
+            // )}
+            // </Droppable>
+            // </DragDropContext>
+            // {provided.placeholder}
+            // <Draggable draggableId={item.cartName} key={item.cartName} index={index}>
+            // {(provided)=>(
+              // )}
+          //  </Draggable>
+          //
